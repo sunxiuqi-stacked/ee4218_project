@@ -319,7 +319,8 @@ begin
                 		begin
                 		//m_axis_valid <= 0;
                     	sum <= RES_read_data_out;
-                    	RES_read_address <= RES_read_address + 1;
+						if(~write_done)
+                    		RES_read_address <= RES_read_address + 1;
                     	output_state <= Write_output;
    						end
    					Write_output:
@@ -336,6 +337,7 @@ begin
    							else
    								begin
    								write_done <= 1;
+   								output_state <= Read_output;
    								end
    							end
    						else
