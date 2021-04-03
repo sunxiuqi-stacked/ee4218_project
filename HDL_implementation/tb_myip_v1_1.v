@@ -49,16 +49,20 @@ module tb_myip_v1_1(
 	
 	localparam NUMBER_OF_INPUT_WORDS  = 723;  // length of an input vector
 	localparam NUMBER_OF_OUTPUT_WORDS  = 64;  // length of an output vector
-	localparam NUMBER_OF_TEST_VECTORS  =  1;  // number of such test vectors (cases)
+	localparam NUMBER_OF_TEST_VECTORS  = 1;  // number of such test vectors (cases)
 	localparam width  = 8;  // width of an input vector
 	          
-	reg [width-1:0] test_input_memory [0:NUMBER_OF_TEST_VECTORS*NUMBER_OF_INPUT_WORDS-1];
-	reg [width-1:0] test_result_expected_memory [0:NUMBER_OF_TEST_VECTORS*NUMBER_OF_OUTPUT_WORDS-1];
-	reg [width-1:0] result_memory [0:NUMBER_OF_TEST_VECTORS*NUMBER_OF_OUTPUT_WORDS-1];
+	reg [width-1:0] test_input_memory [0:NUMBER_OF_TEST_VECTORS*NUMBER_OF_INPUT_WORDS-1]; // 4 inputs * 2
+	reg [width-1:0] test_result_expected_memory [0:NUMBER_OF_TEST_VECTORS*NUMBER_OF_OUTPUT_WORDS-1]; // 4 outputs *2
+	reg [width-1:0] result_memory [0:NUMBER_OF_TEST_VECTORS*NUMBER_OF_OUTPUT_WORDS-1]; // same size as test_result_expected_memory
 	
 	integer word_cnt, test_case_cnt;
 	reg success = 1'b1;
-           
+    reg M_AXIS_TLAST_prev = 1'b0;
+	
+	always@(posedge ACLK)
+		M_AXIS_TLAST_prev <= M_AXIS_TLAST;    
+		  
 	always
 		#50 ACLK = ~ACLK;
              
@@ -103,7 +107,7 @@ module tb_myip_v1_1(
 				/// Output
 					word_cnt = 0;
 					M_AXIS_TREADY = 1'b1;	// we are now ready to receive data
-					while(~M_AXIS_TLAST) // receive data until the falling edge of M_AXIS_TLAST
+					while(M_AXIS_TLAST | ~M_AXIS_TLAST_prev) // receive data until the falling edge of M_AXIS_TLAST
 					begin
 						if(M_AXIS_TVALID)
 						begin
