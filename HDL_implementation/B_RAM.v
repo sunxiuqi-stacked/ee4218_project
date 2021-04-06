@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 // Modified Dual-Port Block RAM with Two Write Ports
 // Original File: rams_tdp_rf_rf.v
 // Modified by: Justin Chong

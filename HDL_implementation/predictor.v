@@ -137,7 +137,7 @@ begin
 					RES_write_en <= 1;
 					if(RES_write_en != 0)
 						RES_write_address <= RES_write_address + 1;
-					RES_write_data_in = (total>>8) + bias1;
+					RES_write_data_in = (total + bias1)>>8;
 					if(hRES_read_address == 0)
 					begin
 						Done <= 1;

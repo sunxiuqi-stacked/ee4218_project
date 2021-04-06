@@ -67,7 +67,7 @@ localparam WRITE_hRES 	= 4'b1000; 	// write final result to hRES_RAM (64x2)
 reg [15:0] total_1 = 0, total_2 = 0;
 reg [7:0]  state = RESET, substate = READ_A;
 reg [7:0]  A = 0, B1 = 0, B2 = 0; //multiplication placeholder registers
-reg [7:0]  bias1 = 0, bias2 = 0; //bias registers
+//reg [7:0]  bias1 = 0, bias2 = 0; //bias registers
 reg [1:0]  neuron_cnt = 0, sigm_wr = 0;
 
 always@(negedge clk)
@@ -109,33 +109,20 @@ begin
 				
 				READ_B:
 				begin
-					if(whid_read_address == 0)
+					if(neuron_cnt == 0)
 					begin
-						bias1 = whid_read_data_out;
+						B1 = whid_read_data_out;
 						whid_read_address <= whid_read_address + 1;
-					end
-					else if(whid_read_address == 1)
-					begin
-						bias2 = whid_read_data_out;
-						whid_read_address <= whid_read_address + 1;
+						neuron_cnt = 1;
 					end
 					else
 					begin
-						if(neuron_cnt == 0)
-						begin
-							B1 = whid_read_data_out;
-							whid_read_address <= whid_read_address + 1;
-							neuron_cnt = 1;
-						end
-						else
-						begin
-							B2 = whid_read_data_out;
-							whid_read_address <= whid_read_address + 1;
-							neuron_cnt = 0;
-							substate <= MULTIPLY;
-							whid_read_en <= 0;
-						end					
-					end
+						B2 = whid_read_data_out;
+						whid_read_address <= whid_read_address + 1;
+						neuron_cnt <= 0;
+						substate <= MULTIPLY;
+						whid_read_en <= 0;
+					end					
 				end
 				
 				MULTIPLY:
@@ -160,7 +147,7 @@ begin
 						if(sigm_wr == 0)
 						begin
 							hRES_write_en <= 0;
-							total_1 = (total_1>>8) + bias1;
+							total_1 = total_1>>8;
 							sigm_read_address <= total_1;
 							sigm_wr <= 1;
 							if(hRES_write_address != 0)
@@ -170,8 +157,8 @@ begin
 						begin
 							hRES_write_en <= 1;
 							hRES_write_data_in <= sigm_read_data_out;
-							sigm_wr = 0;
-							neuron_cnt = 1;
+							sigm_wr <= 0;
+							neuron_cnt <= 1;
 						end
 					end
 					else
@@ -179,20 +166,20 @@ begin
 						if(sigm_wr == 0)
 						begin
 							hRES_write_en <= 0;
-							total_2 = (total_2>>8) + bias2;
-							sigm_read_address = total_2;
-							sigm_wr = 1;
+							total_2 = total_2>>8;
+							sigm_read_address <= total_2;
+							sigm_wr <= 1;
 							hRES_write_address <= hRES_write_address + 1;
 						end
 						else
 						begin
 							hRES_write_en <= 1;
 							hRES_write_data_in <= sigm_read_data_out;
-							sigm_wr = 0;
-							neuron_cnt = 0;
+							sigm_wr <= 0;
+							neuron_cnt <= 0;
 							total_1 <= 0;
 							total_2 <= 0;
-							if(X_read_address == 448)
+							if(X_read_address == 0)
 							begin
 								Done = 1;
 								state <= RESET;

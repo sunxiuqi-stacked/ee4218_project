@@ -71,7 +71,7 @@ input                          M_AXIS_TREADY;  // Connected slave device is read
 //
 
 // RAM parameters
-localparam X_depth_bits = 9;  		// 2^9 = 512 elements (X is a 64x7 matrix)
+localparam X_depth_bits = 9;  		// 2^9 = 512 elements (X is a 64x8 matrix)
 localparam whid_depth_bits = 4; 	// 2^4 =  16 elements (whid is a 8x2 matrix)
 localparam wout_depth_bits = 2; 	// 2^2 =   4 elements (wout is a 3x1 matrix)
 localparam sigm_depth_bits = 8;		// 2^8 = 256 elements (sigm is a 1x256 matrix)
@@ -126,8 +126,8 @@ wire	Done_wout;									// Signal from predictro that computation is done
 			
 				
 // Total number of input data.
-localparam NUMBER_OF_INPUT_VALUES  = 723; // 2^X_depth_bits + 2^whid_depth_bits + 2^wout_depth_bits + 2^sigm_depth_bits = 788
-localparam NUMBER_OF_X = 448;
+localparam NUMBER_OF_INPUT_VALUES  = 787; // 2^X_depth_bits + 2^whid_depth_bits + 2^wout_depth_bits + 2^sigm_depth_bits = 788
+localparam NUMBER_OF_X = 512;
 localparam NUMBER_OF_whid = 16;
 localparam NUMBER_OF_wout = 3;
 localparam NUMBER_OF_sigm = 256;
@@ -245,7 +245,7 @@ begin
                 	sigm_write_data_in = S_AXIS_TDATA[width-1:0];
                     sigm_write_address <= sigm_write_address + 1;
                     sigm_of_reads <= sigm_of_reads - 1;
-                    if(sigm_of_reads == 1)
+                    if(sigm_of_reads == 1'b1)
                     	sigm_write_en <= 0;
                 end
                 else if(whid_of_reads == 0)
@@ -269,8 +269,7 @@ begin
                 else
                 begin
                     X_write_data_in = S_AXIS_TDATA[width-1:0];
-                    if(X_of_reads != 1<<(X_depth_bits))
-                       	X_write_address <= X_write_address + 1;
+                    X_write_address <= X_write_address + 1;
                     X_of_reads <= X_of_reads - 1;
                     if(X_of_reads == 1)
                     	X_write_en <= 0;
